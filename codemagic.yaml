@@ -1,4 +1,4 @@
-workflows:
+orkflows:
   ios-workflow:
     name: iOS Build
     environment:
