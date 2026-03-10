@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -55,6 +54,10 @@ class _PasswordAppState extends State<PasswordApp>
   @override
   void dispose() {
     _buttonController.dispose();
+    serviceController.dispose();
+    userController.dispose();
+    passController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -72,28 +75,7 @@ class _PasswordAppState extends State<PasswordApp>
         builder: (context, widgetChild) {
           return Transform.scale(
             scale: 1 - _buttonController.value,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 100),
-              builder: (context, value, childWidget) {
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.2 + 0.3 * value),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: childWidget,
-                );
-              },
-              child: widgetChild,
-            ),
+            child: widgetChild,
           );
         },
         child: child,
@@ -112,9 +94,9 @@ class _PasswordAppState extends State<PasswordApp>
     String? data = prefs.getString("accounts");
     if (data != null) {
       setState(() {
-        accounts = List<Map<String, String>>.from(
-          jsonDecode(data).map((x) => Map<String, String>.from(x)),
-        );
+        accounts = (jsonDecode(data) as List)
+            .map((x) => Map<String, String>.from(x))
+            .toList();
       });
       applyFilter();
     }
@@ -131,18 +113,6 @@ class _PasswordAppState extends State<PasswordApp>
             .toList();
       }
     });
-  }
-
-  String generatePassword({int length = 14}) {
-    const chars =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%&*";
-    final rnd = Random();
-    return String.fromCharCodes(
-      Iterable.generate(
-        length,
-        (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
-      ),
-    );
   }
 
   void addAccount() {
@@ -245,8 +215,9 @@ class _PasswordAppState extends State<PasswordApp>
 
   void copyPassword(String password) {
     Clipboard.setData(ClipboardData(text: password));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Password copiata")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Password copiata")),
+    );
   }
 
   @override
@@ -273,10 +244,11 @@ class _PasswordAppState extends State<PasswordApp>
                         child: const Text(
                           "Password Manager 🔐",
                           style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.2),
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
                     ),
@@ -288,8 +260,10 @@ class _PasswordAppState extends State<PasswordApp>
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(12),
-                        child: const Icon(Icons.power_settings_new,
-                            color: Colors.white),
+                        child: const Icon(
+                          Icons.power_settings_new,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -370,59 +344,30 @@ class _PasswordAppState extends State<PasswordApp>
                 ),
                 const SizedBox(height: 15),
 
-                // Pulsanti Genera Password + Aggiungi Account
-                Row(
-                  children: [
-                    Expanded(
-                      child: glowButton(
-                        onTap: () {
-                          passController.text = generatePassword();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.deepOrangeAccent,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.vpn_key, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text("Genera Password",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                            ],
+                // Pulsante Aggiungi Account
+                glowButton(
+                  onTap: addAccount,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.greenAccent.shade700,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.add, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          "Aggiungi Account",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: glowButton(
-                        onTap: addAccount,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.greenAccent.shade700,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.add, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text("Aggiungi Account",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 15),
 
@@ -447,7 +392,9 @@ class _PasswordAppState extends State<PasswordApp>
                             title: Text(
                               acc["service"]!,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,9 +403,10 @@ class _PasswordAppState extends State<PasswordApp>
                                 Text(
                                   acc["password"]!,
                                   style: const TextStyle(
-                                      fontFamily: 'Courier',
-                                      letterSpacing: 1.5,
-                                      fontWeight: FontWeight.bold),
+                                    fontFamily: 'Courier',
+                                    letterSpacing: 1.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -466,22 +414,29 @@ class _PasswordAppState extends State<PasswordApp>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.teal),
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.teal,
+                                  ),
                                   onPressed: () => editAccount(originalIndex),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.copy,
-                                      color: Colors.blueAccent),
+                                  icon: const Icon(
+                                    Icons.copy,
+                                    color: Colors.blueAccent,
+                                  ),
                                   onPressed: () =>
                                       copyPassword(acc["password"]!),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.redAccent),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.redAccent,
+                                  ),
                                   onPressed: () =>
                                       deleteAccountWithConfirmation(
-                                          originalIndex),
+                                    originalIndex,
+                                  ),
                                 ),
                               ],
                             ),
