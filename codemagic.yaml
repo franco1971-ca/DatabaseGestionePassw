@@ -1,21 +1,23 @@
 name: Flutter Simple Build
-scripts:
-  # Installa dipendenze
-  - flutter pub get
+workflow:
+  name: Build Flutter iOS & Android
+  scripts:
+    # Installa dipendenze
+    - flutter pub get
 
-  # Build Android APK
-  - flutter build apk --release
-  - mkdir -p build/artifacts
-  - cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
+    # Build Android APK
+    - flutter build apk --release
+    - mkdir -p build/artifacts
+    - cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
 
-  # Build iOS IPA firmata
-  - flutter build ios --release
-  - mkdir -p build/artifacts
-  - xcodebuild -exportArchive \
-      -archivePath build/ios/archive/Runner.xcarchive \
-      -exportOptionsPlist ios/exportOptions.plist \
-      -exportPath build/artifacts
+    # Build iOS IPA firmata
+    - flutter build ios --release
+    - mkdir -p build/artifacts
+    - xcodebuild -exportArchive \
+        -archivePath build/ios/archive/Runner.xcarchive \
+        -exportOptionsPlist ios/exportOptions.plist \
+        -exportPath build/artifacts
 
-artifacts:
-  - build/artifacts/*.ipa
-  - build/artifacts/*.apk
+  artifacts:
+    - build/artifacts/*.ipa
+    - build/artifacts/*.apk
