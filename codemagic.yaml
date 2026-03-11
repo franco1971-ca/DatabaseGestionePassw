@@ -1,10 +1,6 @@
-name: Flutter Minimal Build
-flutter: stable   # definisce la versione di Flutter
-platforms:        # definisce le piattaforme da buildare
-  ios: true
-  android: true
+name: Flutter Simple Build
 scripts:
-  # Installa dipendenze Flutter
+  # Installa dipendenze
   - flutter pub get
 
   # Build Android APK
