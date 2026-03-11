@@ -1,43 +1,25 @@
-name: Flutter Build Main
-environment:
-  flutter: stable
-  xcode: latest
-  cocoapods: default
+name: Flutter Minimal Build
+flutter: stable   # definisce la versione di Flutter
+platforms:        # definisce le piattaforme da buildare
+  ios: true
+  android: true
 scripts:
-  # 1️⃣ Installazione dipendenze
-  - name: Install dependencies
-    script: |
-      flutter pub get
+  # Installa dipendenze Flutter
+  - flutter pub get
 
-  # 2️⃣ Esecuzione test (opzionale)
-  - name: Run tests
-    script: |
-      flutter test || echo "Tests failed, continuing..."
+  # Build Android APK
+  - flutter build apk --release
+  - mkdir -p build/artifacts
+  - cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
 
-  # 3️⃣ Build Android APK
-  - name: Build Android APK
-    script: |
-      flutter build apk --release
-      mkdir -p build/artifacts
-      cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
-
-  # 4️⃣ Build Android AAB
-  - name: Build Android AAB
-    script: |
-      flutter build appbundle --release
-      cp build/app/outputs/bundle/release/app-release.aab build/artifacts/
-
-  # 5️⃣ Build iOS firmata
-  - name: Build iOS signed
-    script: |
-      flutter build ios --release
-      mkdir -p build/artifacts
-      xcodebuild -exportArchive \
-        -archivePath build/ios/archive/Runner.xcarchive \
-        -exportOptionsPlist ios/exportOptions.plist \
-        -exportPath build/artifacts
+  # Build iOS IPA firmata
+  - flutter build ios --release
+  - mkdir -p build/artifacts
+  - xcodebuild -exportArchive \
+      -archivePath build/ios/archive/Runner.xcarchive \
+      -exportOptionsPlist ios/exportOptions.plist \
+      -exportPath build/artifacts
 
 artifacts:
   - build/artifacts/*.ipa
   - build/artifacts/*.apk
-  - build/artifacts/*.aab
