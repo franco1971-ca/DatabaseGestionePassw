@@ -1,34 +1,39 @@
-# Workflow per iOS release
 workflows:
   ios-release:
-    name: iOS Release Workflow
+    name: iOS Release Build
     max_build_duration: 60
+
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+
     scripts:
-      - name: Get Flutter dependencies
-        script: flutter pub get
+      - name: Install dependencies
+        script: |
+          flutter pub get
+
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+          cd ..
+
       - name: Build iOS release
-        script: flutter build ios --release --no-codesign
+        script: |
+          flutter build ipa --release
+
     artifacts:
-      - build/ios/iphoneos/Runner.app
-      - build/ios/iphoneos/Runner.ipa
+      - build/ios/ipa/*.ipa
+
     publishing:
       email:
         recipients:
-          - tuo@email.com
-
-# Trigger: build automatico quando fai push sul branch main
-triggers:
-  - event: push
-    branch: main
-
-# Firma del codice iOS
-# Configurabile nella UI di Codemagic collegando il tuo Apple Developer Account
-# e aggiungendo il certificate + provisioning profile
-code_signing:
-  ios:
-    automatic: true
-    keychain: default
+          - tuaemail@email.com
